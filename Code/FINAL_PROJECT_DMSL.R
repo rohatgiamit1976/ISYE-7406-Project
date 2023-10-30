@@ -115,6 +115,7 @@ lr <- lm(traindata$NormSalary ~. , data = traindata)
 summary(lr)
 
 # Model 1: Mean Squared Error
+# 1:47 if no position,
 pred_lr <- predict(lr, testdata[,1:47])
 te1 <- mean((pred_lr - ytrue)^2)
 te1
@@ -157,4 +158,62 @@ pred_ridge <- as.matrix(testdata[,1:47]) %*% as.vector(ridge.coeffs) + intercept
 te3 <- mean((pred_ridge - ytrue)^2)
 te3
 
+################################# LASSO #######################################
 
+install.packages('lars')
+library(lars)
+
+data.lars <- lars(as.matrix(traindata[,1:47]), traindata[,48], 
+                  type="lasso", trace=FALSE)
+
+# Useful plots for LASSO for all penalty parameters lambda
+plot(data.lars)
+
+# Optimal lambda value that minimizes Mellon's CP Criterion
+cp1 <- summary(data.lars)$Cp
+index1 <- which.min(cp1)
+index1
+
+
+lasso.lambda <- data.lars$lambda[index1]
+lasso.lambda
+
+# LASSO Test error
+pred_lasso <- predict(data.lars, as.matrix(testdata[,1:47]), s=lasso.lambda, 
+                      type="fit", mode="lambda")
+te4 <- mean((pred_lasso$fit - ytrue)^2)
+te4
+
+############################### PC Regression ################################
+install.packages('pls')
+library(pls)
+
+data.pca <- pcr(NormSalary ~., data=traindata, validation="CV")
+validationplot(data.pca)
+summary(data.pca)
+
+# minimum
+ncompopt <- which.min(data.pca$validation$adj)
+ncompopt
+
+pred_pc <- predict(data.pca, ncomp = ncompopt, newdata=testdata[,1:47])
+pred_pc <- pred_pc[,,1]
+te5 <- mean((pred_pc - ytrue)^2)
+te5
+
+################################ PLS ##########################################
+data.pls <- plsr(NormSalary ~., data=traindata, validation="CV")
+
+# optimal # of components of PLS
+pls_ncompopt <- which.min(data.pls$validation$adj)
+pls_ncompopt
+
+pred_pls <- predict(data.pls, ncomp = pls_ncompopt, newdata = testdata[,1:47])
+pred_pls <- pred_pls[,,1]
+te6 <- mean((pred_pls - ytrue)^2)
+te6
+
+
+###############################################################################
+### Models with Monte Carlo CV
+###############################################################################
