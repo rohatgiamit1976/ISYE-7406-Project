@@ -44,7 +44,9 @@ oldest_player <- nbadata[which.max(nbadata$Age), c("Player.Name", "Age")]
 youngest_player <- nbadata[which.min(nbadata$Age), c("Player.Name", "Age")]
 
 # Team Salaries (BOS > SAC > NYK > CLE ..... > BRK/MIA > MIA/WAS)
-team_salary_total <- aggregate(Salary ~ Team, data = nbadata, FUN = sum)
+nbadata$TeamShort <- substr(nbadata$Team, start = 1, stop = 3)
+team_salary_total <- aggregate(Salary ~ TeamShort, data = nbadata, FUN = sum)
+#team_salary_total <- aggregate(Salary ~ Team, data = nbadata, FUN = sum)
 team_salary_total <- team_salary_total[order(-team_salary_total$Salary),]
 
 
