@@ -48,10 +48,27 @@ nbadata$TeamShort <- substr(nbadata$Team, start = 1, stop = 3)
 team_salary_total <- aggregate(Salary ~ TeamShort, data = nbadata, FUN = sum)
 #team_salary_total <- aggregate(Salary ~ Team, data = nbadata, FUN = sum)
 team_salary_total <- team_salary_total[order(-team_salary_total$Salary),]
+############## Correlation Plot##############################################
+nbacor <-- data.frame(nbadata[c("Salary","Age","GP","GS","MP","FG","FGA","X3P","X3PA","X2P","X2PA","FT","FTA","AST","STL","BLK",
+                                "TOV","PF","Total.Minutes","PER","BPM","DWS","WS","VORP","PTS","ORB","DRB","TRB")])
+library("corrplot")
 
+# correlation matrix
+M<-cor(nbacor)
+corrplot(M, method="circle")
 
 ############################### Histograms ###################################
+library("psych")
 
+hist(nbadata$Salary, col="blue", border="white")
+hist(nbadata$Age, col="blue", border="white")
+hist(nbadata$FG, col="blue", border="white")
+hist(nbadata$X3P, col="blue", border="white")
+hist(nbadata$X2P, col="blue", border="white")
+hist(nbadata$FT, col="blue", border="white")
+hist(nbadata$DRB, col="blue", border="white")
+hist(nbadata$STL, col="blue", border="white")
+hist(nbadata$BLK, col="blue", border="white")
 
 ############################## Box Plots #####################################
 boxplot(nbadata$Salary, main = "NBA Salary Boxplot", xlab = "Salary", 
@@ -101,8 +118,45 @@ testdata$Salary <- NULL
 traindata$Position <- NULL
 testdata$Position <- NULL
 
+# Remove high correlated Variables
+traindata$FGA <- NULL
+testdata$FGA <- NULL
+
+traindata$FGP <- NULL
+testdata$FGP <- NULL
+
+traindata$X2PA <- NULL
+testdata$X2PA <- NULL
+
+traindata$PTS <- NULL
+testdata$PTS <- NULL
+
+traindata$DRB <- NULL
+testdata$DRB <- NULL
+
 head(traindata)
 dim(traindata)
+
+###### feature Importance###########
+# ensure results are repeatable
+set.seed(7)
+# load the library
+library(mlbench)
+library(caret)
+library(randomForest)
+# load the dataset
+data(traindata)
+# prepare training scheme
+
+control <- rfeControl(functions=rfFuncs, method="cv", number=10)
+# run the RFE algorithm
+results <- rfe(traindata[,1:42], traindata[,43], sizes=c(1:42), rfeControl=control)
+# summarize the results
+print(results)
+# list the chosen features
+predictors(results)
+# plot the results
+plot(results, type=c("g", "o"))
 
 ###############################################################################
 ## MODELS
