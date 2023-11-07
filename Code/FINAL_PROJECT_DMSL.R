@@ -172,7 +172,7 @@ summary(lr)
 
 # Model 1: Mean Squared Error
 # 1:47 if no position,
-pred_lr <- predict(lr, testdata[,1:47])
+pred_lr <- predict(lr, testdata[,1:42])
 te1 <- mean((pred_lr - ytrue)^2)
 te1
 
@@ -183,7 +183,7 @@ stepwise <- step(lr)
 round(coef(stepwise), 3)
 summary(stepwise)
 
-pred_sw <- predict(stepwise, testdata[,1:47])
+pred_sw <- predict(stepwise, testdata[,1:42])
 te2 <- mean((pred_sw - ytrue)^2)
 te2
 
@@ -204,13 +204,13 @@ indexopt
 ridge_mod$coef[, indexopt]
 
 ridge.coeffs <- ridge_mod$coef[, indexopt] / ridge_mod$scales
-intercept <- -sum(ridge.coeffs * colMeans(traindata[,1:47])) + mean(traindata[,48])
+intercept <- -sum(ridge.coeffs * colMeans(traindata[,1:42])) + mean(traindata[,43])
 
 # see the coefficients estimated from the Ridge regression on the original data scale
 c(intercept, ridge.coeffs)
 
 # Ridge testing errors
-pred_ridge <- as.matrix(testdata[,1:47]) %*% as.vector(ridge.coeffs) + intercept
+pred_ridge <- as.matrix(testdata[,1:42]) %*% as.vector(ridge.coeffs) + intercept
 te3 <- mean((pred_ridge - ytrue)^2)
 te3
 
@@ -219,7 +219,7 @@ te3
 install.packages('lars')
 library(lars)
 
-data.lars <- lars(as.matrix(traindata[,1:47]), traindata[,48], 
+data.lars <- lars(as.matrix(traindata[,1:42]), traindata[,43], 
                   type="lasso", trace=FALSE)
 
 # Useful plots for LASSO for all penalty parameters lambda
@@ -235,7 +235,7 @@ lasso.lambda <- data.lars$lambda[index1]
 lasso.lambda
 
 # LASSO Test error
-pred_lasso <- predict(data.lars, as.matrix(testdata[,1:47]), s=lasso.lambda, 
+pred_lasso <- predict(data.lars, as.matrix(testdata[,1:42]), s=lasso.lambda, 
                       type="fit", mode="lambda")
 te4 <- mean((pred_lasso$fit - ytrue)^2)
 te4
@@ -252,7 +252,7 @@ summary(data.pca)
 ncompopt <- which.min(data.pca$validation$adj)
 ncompopt
 
-pred_pc <- predict(data.pca, ncomp = ncompopt, newdata=testdata[,1:47])
+pred_pc <- predict(data.pca, ncomp = ncompopt, newdata=testdata[,1:42])
 pred_pc <- pred_pc[,,1]
 te5 <- mean((pred_pc - ytrue)^2)
 te5
@@ -264,7 +264,7 @@ data.pls <- plsr(NormSalary ~., data=traindata, validation="CV")
 pls_ncompopt <- which.min(data.pls$validation$adj)
 pls_ncompopt
 
-pred_pls <- predict(data.pls, ncomp = pls_ncompopt, newdata = testdata[,1:47])
+pred_pls <- predict(data.pls, ncomp = pls_ncompopt, newdata = testdata[,1:42])
 pred_pls <- pred_pls[,,1]
 te6 <- mean((pred_pls - ytrue)^2)
 te6
